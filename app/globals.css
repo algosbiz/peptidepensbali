@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/*
+  BRAND COLOURS
+  Taken from the original peptidepensbali.com design, so the brand stays recognisable.
+  Every colour here becomes a Tailwind class automatically, for example:
+    --color-primary  ->  bg-primary, text-primary, border-primary
+  Change a value here and it updates across the whole website.
+*/
+@theme {
+  --color-primary: #bc8222; /* Brand gold (buttons, highlights, logo colour) */
+  --color-primary-dark: #8c5e12; /* Deeper gold for small gold TEXT, so it stays readable */
+  --color-primary-light: #f3e7d0; /* Soft gold tint */
+  --color-secondary: #0b0b0b; /* Brand ink (dark sections, dark cards) */
+  --color-accent: #f4f1e8; /* Warm cream (alternate section background) */
+  --color-background: #ffffff; /* Page background */
+  --color-heading: #0b0b0b; /* Headings */
+  --color-body: #666666; /* Paragraph text */
+  --color-line: #e7e0d0; /* Thin borders */
+
+  /* Main buttons: a deep gold gradient with white text (dark enough for white
+     text to stay readable). bg-linear-to-b from-button to-button-dark */
+  --color-button: #a0691a; /* Top of the button gradient */
+  --color-button-dark: #8a5810; /* Bottom of the gradient, and the hover colour */
+
+  --shadow-card: 0 24px 48px -28px rgb(11 11 11 / 0.3);
+  --shadow-button: 0 10px 24px -10px rgb(140 90 16 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+/*
+  FONTS
+  Poppins (headings) and Inter (body text) are the fonts used on the original site.
+  They are loaded in app/layout.tsx and connected to Tailwind here:
+    font-heading -> Poppins, font-sans -> Inter (the default for all text)
+*/
+@theme inline {
+  --font-heading: var(--font-poppins), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    /* Leaves room for the sticky header when a menu link jumps to a section. */
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-heading);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary-dark);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--color-primary-light);
+  }
+
+  /* Stop the page behind the cart from scrolling while the cart is open.
+     scrollbar-gutter keeps the scrollbar's space, so the page doesn't jump sideways.
+     (That space stays white; the cart panel is white too, so the two blend together.) */
+  html:has(dialog[open]) {
+    overflow: hidden;
+    scrollbar-gutter: stable;
+  }
+
+  /* Hide the default triangle on FAQ questions; we show our own + icon instead. */
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* Reusable text styles, so section headings look the same everywhere. */
+@layer components {
+  .section-title {
+    @apply font-heading text-4xl leading-[1.1] font-semibold tracking-[-0.03em] text-heading sm:text-5xl;
+  }
+
+  /* Small label above a heading, with the short gold line used on the original site. */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 text-xs font-semibold tracking-[0.2em] text-primary-dark uppercase;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 2rem;
+    height: 1px;
+    background: currentColor;
+  }
+
+  /* Rounded label used for lists of short items (areas, categories, ...).
+     Slightly smaller on phones so longer labels stay on one line. */
+  .pill {
+    @apply rounded-full px-3 py-2 text-sm font-medium sm:px-4 sm:py-2.5 sm:text-[15px];
+  }
+
+  .text-link {
+    @apply font-medium text-primary-dark underline decoration-primary/50 underline-offset-4 transition-colors hover:decoration-primary-dark;
+  }
+}
+
+/*
+  ANIMATIONS
+  Kept deliberately small. Visitors who ask their device for reduced motion get none.
+  .fade-up  - plays once when the page loads (used in the hero)
+  Everything else is always visible; the only other motion is hover effects on cards
+  and buttons. (Content is never hidden until scrolled to, so products always show.)
+*/
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .fade-up {
+    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* The cart panel slides in from the right when it opens. */
+  .cart-drawer[open] {
+    animation: slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
