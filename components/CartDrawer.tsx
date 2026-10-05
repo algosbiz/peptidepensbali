@@ -6,7 +6,7 @@ import { ArrowRight, ShoppingBag, Trash, X } from "@phosphor-icons/react/ssr";
 import Button from "./Button";
 import QuantityStepper from "./QuantityStepper";
 import WhatsAppButton from "./WhatsAppButton";
-import { useCart } from "@/lib/cart";
+import { productLabel, useCart } from "@/lib/cart";
 import { getCartMessage } from "@/lib/whatsapp";
 
 // The cart panel that slides in from the right.
@@ -33,7 +33,10 @@ export default function CartDrawer() {
   }
 
   const checkoutMessage = getCartMessage(
-    items.map((item) => ({ name: item.product.name, quantity: item.quantity }))
+    items.map((item) => ({
+      name: productLabel(item.product, item.option?.label),
+      quantity: item.quantity,
+    }))
   );
 
   return (
@@ -90,48 +93,61 @@ export default function CartDrawer() {
         ) : (
           <>
             <ul className="flex-1 space-y-3 overflow-y-auto p-4">
-              {items.map(({ product, quantity }) => (
-                <li key={product.id} className="flex gap-3 rounded-2xl bg-accent p-3">
-                  {/* self-start keeps the 3:2 thumbnail from stretching to the row height */}
-                  <div className="relative aspect-[3/2] w-24 shrink-0 self-start overflow-hidden rounded-xl bg-accent">
-                    <Image
-                      src={product.image}
-                      alt=""
-                      fill
-                      sizes="96px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-heading text-[15px] leading-snug font-semibold">
-                          {product.name}
-                        </p>
-                        <p className="text-xs text-body">{product.format}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          remove(product.id);
-                          focusTitle();
-                        }}
-                        aria-label={`Remove ${product.name} from cart`}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-body transition-colors hover:bg-white hover:text-heading"
-                      >
-                        <Trash size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                    <div className="mt-2">
-                      <QuantityStepper
-                        value={quantity}
-                        onChange={(value) => setQuantity(product.id, value)}
-                        label={`Quantity of ${product.name}`}
+              {items.map(({ product, option, quantity }) => {
+                const ref = { productId: product.id, option: option?.label };
+                const label = productLabel(product, option?.label);
+
+                return (
+                  <li
+                    key={`${product.id}-${option?.label ?? ""}`}
+                    className="flex gap-3 rounded-2xl bg-accent p-3"
+                  >
+                    {/* self-start keeps the 3:2 thumbnail from stretching to the row height */}
+                    <div className="relative aspect-[3/2] w-24 shrink-0 self-start overflow-hidden rounded-xl bg-accent">
+                      <Image
+                        src={option?.image ?? product.image}
+                        alt=""
+                        fill
+                        sizes="96px"
+                        className="object-cover"
                       />
                     </div>
-                  </div>
-                </li>
-              ))}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-heading text-[15px] leading-snug font-semibold">
+                            {product.name}
+                          </p>
+                          <p className="text-xs text-body">
+                            {option && (
+                              <span className="font-semibold text-heading">{option.label} · </span>
+                            )}
+                            {product.format}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            remove(ref);
+                            focusTitle();
+                          }}
+                          aria-label={`Remove ${label} from cart`}
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-body transition-colors hover:bg-white hover:text-heading"
+                        >
+                          <Trash size={16} aria-hidden="true" />
+                        </button>
+                      </div>
+                      <div className="mt-2">
+                        <QuantityStepper
+                          value={quantity}
+                          onChange={(value) => setQuantity(ref, value)}
+                          label={`Quantity of ${label}`}
+                        />
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
 
             <div className="border-t border-line bg-white px-5 pt-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">

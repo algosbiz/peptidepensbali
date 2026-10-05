@@ -98,6 +98,14 @@
     @apply rounded-full px-3 py-2 text-sm font-medium sm:px-4 sm:py-2.5 sm:text-[15px];
   }
 
+  /* Speed: the browser skips drawing a block until it is close to the screen.
+     The content still exists for search engines, screen readers and Ctrl+F.
+     Used on the catalogue's product grids, which hold many product cards. */
+  .render-when-near {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1100px;
+  }
+
   .text-link {
     @apply font-medium text-primary-dark underline decoration-primary/50 underline-offset-4 transition-colors hover:decoration-primary-dark;
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { products, type Product } from "@/data/products";
+import { products, type Product, type ProductOption } from "@/data/products";
 
 // THE CART
 // There is no shop backend: the cart only lives in the visitor's browser
@@ -11,8 +11,12 @@ import { products, type Product } from "@/data/products";
 // Components read the cart with the useCart() hook below, e.g.
 //   const { items, count, add, open } = useCart();
 
-export type CartLine = { productId: number; quantity: number };
-export type CartItem = { product: Product; quantity: number };
+// One line in the cart: a product, its dose (for products with dose options) and how many.
+export type CartLine = { productId: number; option?: string; quantity: number };
+// Points at one line: the same product in two doses is two separate lines.
+export type LineRef = { productId: number; option?: string };
+// What components receive for each line.
+export type CartItem = { product: Product; option?: ProductOption; quantity: number };
 
 export const MAX_QUANTITY = 99;
 const STORAGE_KEY = "peptide-pens-bali-cart";
@@ -30,14 +34,42 @@ export function clampQuantity(quantity: number) {
   return Math.min(MAX_QUANTITY, Math.max(1, Math.round(quantity)));
 }
 
-// Read the saved cart, ignoring anything broken or any product that no longer exists.
+// The name used in the cart and in WhatsApp messages, e.g. "Retatrutide Pen (10 mg)".
+export function productLabel(product: Product, option?: string) {
+  return option ? `${product.name} (${option})` : product.name;
+}
+
+// Products with doses always get a valid dose (the first one if none or an old one is
+// given); products without doses never get one.
+function validOption(product: Product, option?: string) {
+  if (!product.options?.length) return undefined;
+  return product.options.some((o) => o.label === option) ? option : product.options[0].label;
+}
+
+function isSameLine(line: LineRef, ref: LineRef) {
+  return line.productId === ref.productId && (line.option ?? "") === (ref.option ?? "");
+}
+
+// Read the saved cart, ignoring anything broken or any product that no longer exists,
+// and merging lines that point at the same product and dose.
 function readSavedLines(): CartLine[] {
   try {
     const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
     if (!Array.isArray(saved)) return [];
-    return saved
-      .filter((line) => products.some((product) => product.id === line?.productId))
-      .map((line) => ({ productId: line.productId, quantity: clampQuantity(line.quantity) }));
+    const lines: CartLine[] = [];
+    for (const raw of saved) {
+      const product = products.find((p) => p.id === raw?.productId);
+      if (!product) continue;
+      const line = {
+        productId: product.id,
+        option: validOption(product, typeof raw.option === "string" ? raw.option : undefined),
+        quantity: clampQuantity(Number(raw.quantity)),
+      };
+      const existing = lines.find((l) => isSameLine(l, line));
+      if (existing) existing.quantity = clampQuantity(existing.quantity + line.quantity);
+      else lines.push(line);
+    }
+    return lines;
   } catch {
     return [];
   }
@@ -89,27 +121,30 @@ function getServerSnapshot() {
 
 // Actions. They can be called from any component, e.g. onClick={() => cart.open()}
 export const cart = {
-  add(productId: number, quantity = 1) {
+  add(ref: LineRef, quantity = 1) {
+    const product = products.find((p) => p.id === ref.productId);
+    if (!product) return;
+    const target = { productId: product.id, option: validOption(product, ref.option) };
     const current = getSnapshot().lines;
-    const existing = current.find((line) => line.productId === productId);
+    const existing = current.find((line) => isSameLine(line, target));
     const lines = existing
       ? current.map((line) =>
-          line.productId === productId
+          isSameLine(line, target)
             ? { ...line, quantity: clampQuantity(line.quantity + quantity) }
             : line
         )
-      : [...current, { productId, quantity: clampQuantity(quantity) }];
+      : [...current, { ...target, quantity: clampQuantity(quantity) }];
     update({ lines, isOpen: true });
   },
-  setQuantity(productId: number, quantity: number) {
+  setQuantity(ref: LineRef, quantity: number) {
     update({
       lines: getSnapshot().lines.map((line) =>
-        line.productId === productId ? { ...line, quantity: clampQuantity(quantity) } : line
+        isSameLine(line, ref) ? { ...line, quantity: clampQuantity(quantity) } : line
       ),
     });
   },
-  remove(productId: number) {
-    update({ lines: getSnapshot().lines.filter((line) => line.productId !== productId) });
+  remove(ref: LineRef) {
+    update({ lines: getSnapshot().lines.filter((line) => !isSameLine(line, ref)) });
   },
   clear() {
     update({ lines: [] });
@@ -127,7 +162,9 @@ export function useCart() {
 
   const items: CartItem[] = current.lines.flatMap((line) => {
     const product = products.find((p) => p.id === line.productId);
-    return product ? [{ product, quantity: line.quantity }] : [];
+    if (!product) return [];
+    const option = product.options?.find((o) => o.label === line.option);
+    return [{ product, option, quantity: line.quantity }];
   });
   const count = items.reduce((total, item) => total + item.quantity, 0);
 

@@ -30,7 +30,26 @@ export default function Products() {
           </div>
         </div>
 
-        <div className="mt-14 space-y-14 lg:space-y-16">
+        {/* Buttons that jump to each category. On phones the row scrolls sideways. */}
+        <nav aria-label="Product categories" className="mt-10">
+          <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+            {categories.map((category) => (
+              <li key={category.id} className="shrink-0">
+                <a
+                  href={`#category-${category.id}`}
+                  className="pill inline-flex items-center gap-2 border border-line bg-white text-heading transition-colors hover:border-heading"
+                >
+                  {category.label}
+                  <span className="text-body">
+                    {products.filter((product) => product.category === category.id).length}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="mt-12 space-y-14 lg:space-y-16">
           {/* One row per category in data/products.ts */}
           {categories.map((category) => {
             const items = products.filter((product) => product.category === category.id);
@@ -40,6 +59,7 @@ export default function Products() {
               // above them on smaller ones, so the cards always have enough room.
               <div
                 key={category.id}
+                id={`category-${category.id}`}
                 className="grid gap-8 border-t border-secondary/15 pt-8 xl:grid-cols-12 xl:gap-10"
               >
                 <div className="xl:col-span-3">
@@ -52,7 +72,7 @@ export default function Products() {
                   <p className="mt-3 text-body">{category.intro}</p>
                 </div>
 
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-9">
+                <div className="render-when-near grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-9">
                   {items.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}

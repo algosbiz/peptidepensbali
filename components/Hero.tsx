@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { ArrowDown } from "@phosphor-icons/react/ssr";
+import { ArrowUpRight } from "@phosphor-icons/react/ssr";
 import Container from "./Container";
 import Button from "./Button";
 import WhatsAppButton from "./WhatsAppButton";
+import { CATALOGUE_URL } from "@/lib/site";
 import { WHATSAPP_MESSAGES } from "@/lib/whatsapp";
 
 // The top banner: a wide photo with a white card that overlaps its bottom edge
@@ -35,9 +36,10 @@ export default function Hero() {
           </p>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Button href="#pens">
+            {/* Goes to the full Atlas Longevity catalogue (CATALOGUE_URL in lib/site.ts). */}
+            <Button href={CATALOGUE_URL}>
               Browse Peptide Pens
-              <ArrowDown size={18} weight="bold" aria-hidden="true" />
+              <ArrowUpRight size={18} weight="bold" aria-hidden="true" />
             </Button>
             <WhatsAppButton message={WHATSAPP_MESSAGES.general} variant="outline">
               Contact Our Team

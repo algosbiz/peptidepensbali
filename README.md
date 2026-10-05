@@ -69,9 +69,12 @@ public/images/     All images (logo, hero, products, about, delivery, share imag
 ## How the cart works
 
 1. Each product card has a **quantity picker** (− 1 +) and an **Add to cart** button.
-   Adding a product opens the cart panel on the right.
+   Products that come in several doses (e.g. Retatrutide 5 / 10 / 20 / 30 mg) also have a
+   **dose picker**; the photo changes to match the chosen dose. Adding a product opens the cart
+   panel on the right.
 2. The **bag icon** in the header shows how many items are in the cart and opens it.
-3. In the cart, visitors can change quantities or remove products.
+3. In the cart, visitors can change quantities or remove products. The same product in two
+   doses shows as two separate lines.
 4. **Proceed to Checkout** opens WhatsApp with a message like:
 
    ```
@@ -79,8 +82,8 @@ public/images/     All images (logo, hero, products, about, delivery, share imag
 
    I'd like to order:
 
-   • 2 × Retatrutide Pen
-   • 1 × Semax Nasal Spray
+   • 2 × Retatrutide Pen (10 mg)
+   • 1 × Summer Cut Bundle
 
    Could you please confirm availability and delivery?
    ```
@@ -101,35 +104,69 @@ Good to know:
 
 ### Change a product, or add a new one
 
-Open **`data/products.ts`**. Each product is one block:
+Open **`data/products.ts`**. Each product is one block. A pen with several doses:
 
 ```ts
 {
-  id: 10,
+  id: 57,
   name: "New Peptide Pen",
   category: "recovery",
   format: "Disposable peptide pen",
-  image: "/images/products/new-peptide.webp",
+  image: "/images/products/new-peptide-pen-5-mg.webp",
+  options: [
+    { label: "5 mg", image: "/images/products/new-peptide-pen-5-mg.webp" },
+    { label: "10 mg", image: "/images/products/new-peptide-pen-10-mg.webp" },
+  ],
 },
 ```
 
-To add a product, copy a block, paste it at the end of the list, give it a **new** `id` that no
-product has used before, and set `category` to the `id` of one of the categories at the top of the
-same file (`weight-management`, `recovery`, `wellness` or `nasal-sprays`). Its quantity picker,
-Add to cart button and WhatsApp link are created automatically.
+- `options` is optional. Leave it out for bundles, protocols and accessories. With one option
+  (e.g. `[{ label: "10 mg" }]`) the dose is simply shown on the card; with several, visitors
+  choose one. An option only needs its own `image` if its photo is different.
+- `tag` is optional: a small label above the name, used for the protocol goal
+  (e.g. `tag: "Fat Loss Stacks"`).
+
+To add a product, copy a block, paste it into the list, give it a **new** `id` that no product has
+used before (the highest is 56 now), and set `category` to the `id` of one of the categories at
+the top of the same file:
+
+| `category` id       | Shown as                         |
+| ------------------- | -------------------------------- |
+| `weight-management` | 01 Weight Management Pens        |
+| `recovery`          | 02 Recovery Pens                 |
+| `wellness`          | 03 Wellness Pens                 |
+| `longevity`         | 04 Longevity Pens                |
+| `performance`       | 05 Muscle Growth & Performance Pens |
+| `focus-sleep`       | 06 Focus & Sleep Pens            |
+| `libido`            | 07 Libido & Sexual Wellness Pens |
+| `nasal-sprays`      | 08 Nasal Spray Peptides          |
+| `bundles`           | 09 Bundles                       |
+| `protocols`         | 10 Peptide Protocols             |
+| `accessories`       | 11 Pen Accessories & Services    |
+
+Its dose picker, quantity picker, Add to cart button and WhatsApp link are created
+automatically, and its category button at the top of the catalogue shows the new count.
 
 Never change or reuse an existing `id`: visitors' saved carts remember products by their id. If two
-products share an id, the site stops with an error message telling you to fix it.
+products share an id, or a product uses a category that doesn't exist, the site stops with an error
+message telling you what to fix.
 
-To add a whole new category row, add a block to the `categories` list at the top of the file.
+To add a whole new category row, add a block to the `categories` list at the top of the file
+(`label` is the short name used on its button).
+
+The product names, doses and photos follow the full catalogue at
+[peptidesbali.online](https://peptidesbali.online/). Prices are not shown on this site; the team
+confirms them on WhatsApp.
 
 ### Add or replace a product image
 
 Put the image in **`public/images/products/`** and make sure the `image` path in
 `data/products.ts` matches the file name.
 
-- Best shape: **3:2**, for example 1536 × 1024 pixels (the same as the current product photos).
-  Other shapes work but get cropped to 3:2.
+- Best shape: **3:2**, for example 1200 × 800 pixels (the same as the current product photos).
+  Other shapes work but get cropped to 3:2. For a square or tall picture with text on it, first
+  add plain space on the left and right so it becomes 3:2 (that is how the bundle, protocol and
+  accessory pictures were prepared).
 - `.webp` or `.jpg` both work; the site converts and resizes images automatically.
 - `semaglutide-pen.webp` is a temporary placeholder, because there is no Semaglutide pen photo
   yet. Save the real photo with the same file name and it will appear with no code changes.
