@@ -308,11 +308,11 @@ export const products: Product[] = [
     name: "Epitalon Pen",
     category: "longevity",
     format: "Disposable peptide pen",
-    image: "/images/products/epitalon-10-mg-peptide-pen-bali.webp",
+    image: "/images/products/epithalon-10-mg-peptide-pen-bali.webp",
     options: [
-      { label: "10 mg", image: "/images/products/epitalon-10-mg-peptide-pen-bali.webp" },
-      { label: "50 mg", image: "/images/products/epitalon-50-mg-peptide-pen-bali.webp" },
-      { label: "100 mg", image: "/images/products/epitalon-100-mg-peptide-pen-bali.webp" },
+      { label: "10 mg", image: "/images/products/epithalon-10-mg-peptide-pen-bali.webp" },
+      { label: "50 mg", image: "/images/products/epithalon-50-mg-peptide-pen-bali.webp" },
+      { label: "100 mg", image: "/images/products/epithalon-100-mg-peptide-pen-bali.webp" },
     ],
   },
   {
@@ -449,14 +449,6 @@ export const products: Product[] = [
     ],
   },
   {
-    id: 30,
-    name: "Melatonin Pen",
-    category: "focus-sleep",
-    format: "Disposable peptide pen",
-    image: "/images/products/melanotan-i-10-mg-peptide-pen-bali.webp",
-    options: [{ label: "10 mg" }],
-  },
-  {
     id: 31,
     name: "PT-141 Pen",
     category: "libido",
@@ -479,6 +471,14 @@ export const products: Product[] = [
     format: "Disposable peptide pen",
     image: "/images/products/hcg-5000-iu-peptide-pen-bali.webp",
     options: [{ label: "5000 IU" }],
+  },
+  {
+    id: 62,
+    name: "Melanotan I Pen",
+    category: "libido",
+    format: "Disposable peptide pen",
+    image: "/images/products/melanotan-i-10-mg-peptide-pen-bali.webp",
+    options: [{ label: "10 mg" }],
   },
   {
     id: 33,

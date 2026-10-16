@@ -132,7 +132,7 @@ Open **`data/products.ts`**. Each product is one block. A pen with several doses
   (e.g. `tag: "Fat Loss Stacks"`).
 
 To add a product, copy a block, paste it into the list, give it a **new** `id` that no product has
-used before (the highest is 61 now), and set `category` to the `id` of one of the categories at
+used before (the highest is 62 now), and set `category` to the `id` of one of the categories at
 the top of the same file:
 
 | `category` id       | Shown as                         |
