@@ -14,6 +14,8 @@ function doseRange(product: Product) {
   const labels = (product.options ?? []).map((o) => o.label);
   if (labels.length === 0) return "";
   if (labels.length === 1) return labels[0];
+  // Combination pens ("10 mg + 2 mg") don't make a readable range, so count them instead.
+  if (labels.some((label) => label.includes("+"))) return `${labels.length} strengths`;
   const first = labels[0].replace(/\s*mg$/, "");
   return `${first}-${labels[labels.length - 1]}`;
 }

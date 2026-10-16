@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Check, List, MagnifyingGlass, Truck, WhatsappLogo, X } from "@phosphor-icons/react/ssr";
 import CartButton from "./CartButton";
@@ -30,6 +30,17 @@ const promises = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // True once the desktop logo row has scrolled out of view. The bar that stays at
+  // the top then shows a small logo and a soft shadow.
+  const [stuck, setStuck] = useState(false);
+  const logoRow = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!logoRow.current) return;
+    const observer = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting));
+    observer.observe(logoRow.current);
+    return () => observer.disconnect();
+  }, []);
 
   // Let keyboard users close the phone menu with the Escape key.
   // If the cart panel is open on top, Escape only closes the cart.
@@ -82,7 +93,7 @@ export default function Header() {
       </div>
 
       {/* 2. Desktop: logo, search and WhatsApp contact */}
-      <div className="hidden bg-surface lg:block">
+      <div ref={logoRow} className="hidden bg-surface lg:block">
         <Container className="flex h-[84px] items-center gap-10">
           {logo}
           <div className="max-w-2xl flex-1">
@@ -106,17 +117,39 @@ export default function Header() {
       </div>
 
       {/* 3. The bar that stays at the top */}
-      <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur-md">
+      <header
+        className={`sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur-md transition-shadow duration-300 ${
+          stuck ? "shadow-[0_12px_32px_-20px_rgb(11_11_11/0.35)]" : ""
+        }`}
+      >
         {/* Desktop */}
-        <Container className="hidden h-14 items-center gap-8 lg:flex">
+        <Container className="hidden h-16 items-center lg:flex">
+          {/* Small logo, wide screens only: it slides in once the logo row above has
+              scrolled away. inert keeps it out of the keyboard order while hidden. */}
+          <a
+            href="#top"
+            aria-label="Peptide Pens Bali, back to top"
+            inert={!stuck}
+            className={`hidden shrink-0 overflow-hidden transition-all duration-300 xl:block ${
+              stuck ? "mr-6 max-w-28 opacity-100" : "mr-0 max-w-0 opacity-0"
+            }`}
+          >
+            <Image
+              src="/images/logo/peptide-pens-bali-logo.png"
+              alt=""
+              width={147}
+              height={48}
+              className="h-8 w-auto max-w-none"
+            />
+          </a>
           <CategoryMenu />
-          <nav aria-label="Main">
-            <ul className="flex items-center gap-7">
+          <nav aria-label="Main" className="ml-6">
+            <ul className="flex items-center gap-1">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="text-[13px] font-semibold tracking-wide text-heading uppercase transition-colors hover:text-primary-dark"
+                    className="block rounded-full px-3 py-2 text-[13px] font-semibold tracking-[0.08em] text-heading uppercase transition-colors hover:bg-accent hover:text-primary-dark"
                   >
                     {link.label}
                   </a>
@@ -124,11 +157,17 @@ export default function Header() {
               ))}
             </ul>
           </nav>
-          <p className="ml-auto hidden items-center gap-2 text-sm text-body xl:flex">
-            <Truck size={20} className="text-primary-dark" aria-hidden="true" />
-            Fast delivery across Bali
-          </p>
-          <div className="ml-auto xl:ml-0">
+          <div className="ml-auto flex items-center gap-4 pl-6">
+            <p className="hidden items-center gap-3 xl:flex">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-light text-primary-dark">
+                <Truck size={20} aria-hidden="true" />
+              </span>
+              <span className="leading-tight">
+                <span className="block text-sm font-semibold text-heading">Fast delivery</span>{" "}
+                <span className="block text-xs text-body">across Bali</span>
+              </span>
+            </p>
+            <span aria-hidden="true" className="hidden h-8 w-px bg-line xl:block" />
             <CartButton labelled />
           </div>
         </Container>

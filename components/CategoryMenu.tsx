@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CaretDown, List } from "@phosphor-icons/react/ssr";
+import { CaretDown, SquaresFour } from "@phosphor-icons/react/ssr";
 import { categories, products } from "@/data/products";
 
 // The "Browse categories" button in the desktop header. It opens a list of all
@@ -29,38 +29,43 @@ export default function CategoryMenu() {
   }, [open]);
 
   return (
-    <div ref={wrapper} className="relative w-64 shrink-0">
+    <div ref={wrapper} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls="category-menu"
-        className="flex h-12 w-full items-center gap-3 bg-secondary px-5 text-[13px] font-semibold tracking-wide text-white uppercase"
+        className="flex h-11 items-center gap-3 rounded-full bg-secondary py-1.5 pr-5 pl-1.5 text-[13px] font-semibold tracking-[0.08em] text-white uppercase shadow-[0_10px_24px_-14px_rgb(11_11_11/0.8)] transition-colors hover:bg-[#262626]"
       >
-        <List size={20} aria-hidden="true" />
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-b from-primary to-button-dark">
+          <SquaresFour size={16} weight="fill" aria-hidden="true" />
+        </span>
         Browse categories
         <CaretDown
-          size={16}
+          size={14}
           weight="bold"
           aria-hidden="true"
-          className={`ml-auto transition-transform ${open ? "rotate-180" : ""}`}
+          className={`ml-1 text-primary transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
+      {/* The list floats just below the button, with the category number in gold
+          and the number of products on the right. */}
       {open && (
         <ul
           id="category-menu"
-          className="absolute inset-x-0 top-full z-50 rounded-b-2xl border border-t-0 border-line bg-white py-2 shadow-card"
+          className="absolute top-[calc(100%+0.75rem)] left-0 z-50 w-80 rounded-2xl border border-line bg-white p-2 shadow-[0_28px_60px_-24px_rgb(11_11_11/0.4)]"
         >
           {categories.map((category) => (
             <li key={category.id}>
               <a
                 href={`#category-${category.id}`}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-between gap-3 px-5 py-2.5 text-sm font-medium text-heading transition-colors hover:bg-accent hover:text-primary-dark"
+                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-heading transition-colors hover:bg-accent"
               >
+                <span className="w-5 text-xs font-semibold text-primary-dark">{category.number}</span>
                 {category.label}
-                <span className="text-xs text-body">
+                <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs text-body transition-colors group-hover:bg-white">
                   {products.filter((product) => product.category === category.id).length}
                 </span>
               </a>

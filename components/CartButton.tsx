@@ -16,12 +16,20 @@ export default function CartButton({ labelled = false }: { labelled?: boolean })
       aria-label={labelled ? undefined : count ? `Open cart, ${items}` : "Open cart, empty"}
       className="group flex shrink-0 items-center gap-3 text-left"
     >
-      <span className="relative grid h-11 w-11 place-items-center rounded-full border border-line text-heading transition-colors group-hover:border-heading">
-        <ShoppingBag size={22} aria-hidden="true" />
+      {/* Desktop (labelled): a dark circle that matches the "Browse categories" button.
+          Phones: an outlined circle like the menu and search buttons next to it. */}
+      <span
+        className={`relative grid h-11 w-11 place-items-center rounded-full transition-colors ${
+          labelled
+            ? "bg-secondary text-white group-hover:bg-[#262626]"
+            : "border border-line text-heading group-hover:border-heading"
+        }`}
+      >
+        <ShoppingBag size={labelled ? 20 : 22} aria-hidden="true" />
         {count > 0 && (
           <span
             aria-hidden="true"
-            className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-button-dark px-1 text-[11px] leading-none font-semibold text-white"
+            className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-button-dark px-1 text-[11px] leading-none font-semibold text-white ring-2 ring-white"
           >
             {count}
           </span>
