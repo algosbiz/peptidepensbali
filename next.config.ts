@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
-// Next.js defaults work well for this site: images placed in /public/images are
-// automatically resized and served as WebP by the <Image> component.
+// Images placed in /public/images are automatically resized by the <Image> component.
 const nextConfig: NextConfig = {
+  // Browsers that support AVIF (most of them) get AVIF, which is about 20% smaller
+  // than WebP, so the product photo at the top of the page appears sooner on phones.
+  // Older browsers get WebP.
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
+
   // Only matters while developing (npm run dev). For safety, the dev server only
   // lets the page connect to it from "localhost". Opened from anywhere else, the
   // page still shows but no button works (menu, cart, quantity, Add to cart).

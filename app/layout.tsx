@@ -90,7 +90,9 @@ const organizationJsonLd = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${poppins.variable} ${inter.variable} antialiased`}>
-      <body>
+      {/* On phones and tablets the bottom padding keeps the end of the page clear of
+          the shortcut toolbar fixed to the bottom of the screen (components/MobileToolbar.tsx). */}
+      <body className="pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
         {children}
         <script
           type="application/ld+json"

@@ -6,6 +6,7 @@ import { ArrowRight, ShoppingBag, Trash, X } from "@phosphor-icons/react/ssr";
 import Button from "./Button";
 import QuantityStepper from "./QuantityStepper";
 import WhatsAppButton from "./WhatsAppButton";
+import { hasWidePhoto } from "@/data/products";
 import { productLabel, useCart } from "@/lib/cart";
 import { getCartMessage } from "@/lib/whatsapp";
 
@@ -102,8 +103,10 @@ export default function CartDrawer() {
                     key={`${product.id}-${option?.label ?? ""}`}
                     className="flex gap-3 rounded-2xl bg-accent p-3"
                   >
-                    {/* self-start keeps the 3:2 thumbnail from stretching to the row height */}
-                    <div className="relative aspect-[3/2] w-24 shrink-0 self-start overflow-hidden rounded-xl bg-accent">
+                    {/* self-start keeps the thumbnail from stretching to the row height */}
+                    <div
+                      className={`relative w-24 shrink-0 self-start overflow-hidden rounded-xl bg-accent ${hasWidePhoto(product) ? "aspect-[3/2]" : "aspect-square"}`}
+                    >
                       <Image
                         src={option?.image ?? product.image}
                         alt=""

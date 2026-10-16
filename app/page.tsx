@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import ProductSlider from "@/components/ProductSlider";
 import Hero from "@/components/Hero";
 import Intro from "@/components/Intro";
 import Products from "@/components/Products";
@@ -22,6 +23,7 @@ export default function Home() {
       <Header />
 
       <main id="main">
+        <ProductSlider />
         <Hero />
         <Intro />
         <Products />

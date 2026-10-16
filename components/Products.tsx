@@ -4,19 +4,21 @@ import WhatsAppButton from "./WhatsAppButton";
 import { categories, products } from "@/data/products";
 import { WHATSAPP_MESSAGES } from "@/lib/whatsapp";
 
-// On large screens each row holds 3 cards. A category's note card stretches
-// across whatever space is left in its last row, so rows never end with a gap.
-const noteSpan = ["lg:col-span-3", "lg:col-span-2", "lg:col-span-1"];
+// The grid shows 2 cards per row on phones, 3 on laptops (lg) and 4 on wide screens (xl).
+// A category's note card stretches across whatever space is left in its last row,
+// so rows never end with a gap.
+const noteSpanLg = ["lg:col-span-3", "lg:col-span-2", "lg:col-span-1"];
+const noteSpanXl = ["xl:col-span-4", "xl:col-span-3", "xl:col-span-2", "xl:col-span-1"];
 
 export default function Products() {
   return (
-    <section id="pens" className="bg-accent py-20 lg:py-28">
+    <section id="pens" className="pb-16 lg:pb-24">
       <Container>
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <p className="eyebrow">Our Range</p>
             <h2 className="section-title mt-4">Disposable Peptide Pens Available</h2>
-            <p className="mt-5 text-lg text-body">
+            <p className="mt-4 text-lg text-body">
               Atlas Longevity offers a growing range of disposable peptide pens.
             </p>
           </div>
@@ -31,7 +33,7 @@ export default function Products() {
         </div>
 
         {/* Buttons that jump to each category. On phones the row scrolls sideways. */}
-        <nav aria-label="Product categories" className="mt-10">
+        <nav aria-label="Product categories" className="mt-8">
           <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
             {categories.map((category) => (
               <li key={category.id} className="shrink-0">
@@ -50,38 +52,33 @@ export default function Products() {
         </nav>
 
         <div className="mt-12 space-y-14 lg:space-y-16">
-          {/* One row per category in data/products.ts */}
+          {/* One block per category in data/products.ts: a dark title bar, then its products */}
           {categories.map((category) => {
             const items = products.filter((product) => product.category === category.id);
 
             return (
-              // The category title sits beside its cards on wide screens (xl) and
-              // above them on smaller ones, so the cards always have enough room.
-              <div
-                key={category.id}
-                id={`category-${category.id}`}
-                className="grid gap-8 border-t border-secondary/15 pt-8 xl:grid-cols-12 xl:gap-10"
-              >
-                <div className="xl:col-span-3">
-                  <p className="font-heading text-sm font-semibold text-primary-dark">
-                    {category.number}
-                  </p>
-                  <h3 className="mt-2 font-heading text-2xl font-semibold text-heading">
+              <div key={category.id} id={`category-${category.id}`}>
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-secondary px-5 py-3.5 sm:px-6">
+                  <h3 className="font-heading text-lg leading-snug font-semibold text-white sm:text-xl">
+                    <span className="mr-2 text-primary">{category.number}</span>
                     {category.title}
                   </h3>
-                  <p className="mt-3 text-body">{category.intro}</p>
+                  <p className="shrink-0 text-xs text-white/70 sm:text-sm">
+                    {items.length} {items.length === 1 ? "product" : "products"}
+                  </p>
                 </div>
+                <p className="mt-3 text-sm text-body">{category.intro}</p>
 
-                <div className="render-when-near grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:col-span-9">
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                   {items.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
 
                   {category.note && (
                     <div
-                      className={`flex flex-col justify-between gap-8 rounded-2xl bg-secondary p-7 sm:col-span-2 ${noteSpan[items.length % 3]}`}
+                      className={`col-span-2 flex flex-col justify-between gap-6 rounded-xl bg-accent p-6 sm:p-7 ${noteSpanLg[items.length % 3]} ${noteSpanXl[items.length % 4]}`}
                     >
-                      <p className="max-w-md font-heading text-xl leading-snug font-medium text-white">
+                      <p className="max-w-md font-heading text-lg leading-snug font-medium text-heading sm:text-xl">
                         {category.note}
                       </p>
                       <div>

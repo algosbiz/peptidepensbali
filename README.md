@@ -8,6 +8,10 @@ accounts or database. Visitors add products to the cart, and **Proceed to Checko
 WhatsApp with the whole order already written. The Atlas Longevity team confirms price,
 availability and delivery in the chat.
 
+The layout is shop-style: a header with product search and a "Browse categories" menu, a slider
+with featured products at the top, the catalogue grouped by category, and on phones a toolbar
+fixed to the bottom of the screen (Shop, Categories, Cart, WhatsApp).
+
 ---
 
 ## Run the website on your computer
@@ -72,7 +76,8 @@ public/images/     All images (logo, hero, products, about, delivery, share imag
    Products that come in several doses (e.g. Retatrutide 5 / 10 / 20 / 30 mg) also have a
    **dose picker**; the photo changes to match the chosen dose. Adding a product opens the cart
    panel on the right.
-2. The **bag icon** in the header shows how many items are in the cart and opens it.
+2. The **Cart** button in the header (and in the toolbar at the bottom of phone screens) shows
+   how many items are in the cart and opens it.
 3. In the cart, visitors can change quantities or remove products. The same product in two
    doses shows as two separate lines.
 4. **Proceed to Checkout** opens WhatsApp with a message like:
@@ -94,9 +99,9 @@ Good to know:
   is sent anywhere until the visitor presses Proceed to Checkout.
 - New products added to `data/products.ts` get an Add to cart button automatically.
 - To change the checkout message, edit `getCartMessage` in **`lib/whatsapp.ts`**.
-- The cart panel is `components/CartDrawer.tsx`, the header bag icon is
+- The cart panel is `components/CartDrawer.tsx`, the header cart button is
   `components/CartButton.tsx`, and the product card buttons are `components/AddToCart.tsx`.
-- Each card also keeps an **Or ask on WhatsApp** link for questions about one product.
+- Each card also keeps an **Ask on WhatsApp** link for questions about one product.
 
 ---
 
@@ -127,7 +132,7 @@ Open **`data/products.ts`**. Each product is one block. A pen with several doses
   (e.g. `tag: "Fat Loss Stacks"`).
 
 To add a product, copy a block, paste it into the list, give it a **new** `id` that no product has
-used before (the highest is 56 now), and set `category` to the `id` of one of the categories at
+used before (the highest is 61 now), and set `category` to the `id` of one of the categories at
 the top of the same file:
 
 | `category` id       | Shown as                         |
@@ -158,25 +163,50 @@ The product names, doses and photos follow the full catalogue at
 [peptidesbali.online](https://peptidesbali.online/). Prices are not shown on this site; the team
 confirms them on WhatsApp.
 
+### Choose the products in the slider
+
+The slider at the top of the page shows the products listed in `featuredProductIds`, near the top
+of **`data/products.ts`**:
+
+```ts
+export const featuredProductIds = [1, 2, 10, 4, 7, 17];
+```
+
+Use the product `id`s, in the order the slides should appear. The slide text (category, available
+doses, "View product" link) is filled in from the product automatically. The slider only moves
+when visitors use the arrows, the dots, a swipe or the arrow keys.
+
+### Product search
+
+The search box in the header (the magnifying glass on phones) needs no upkeep: it searches every
+product in `data/products.ts` by name, category, format, protocol goal and dose. Picking a result
+scrolls to that product's card and briefly outlines it in gold.
+
 ### Add or replace a product image
 
 Put the image in **`public/images/products/`** and make sure the `image` path in
 `data/products.ts` matches the file name.
 
-- Best shape: **3:2**, for example 1200 × 800 pixels (the same as the current product photos).
-  Other shapes work but get cropped to 3:2. For a square or tall picture with text on it, first
-  add plain space on the left and right so it becomes 3:2 (that is how the bundle, protocol and
-  accessory pictures were prepared).
-- `.webp` or `.jpg` both work; the site converts and resizes images automatically.
-- `semaglutide-pen.webp` is a temporary placeholder, because there is no Semaglutide pen photo
-  yet. Save the real photo with the same file name and it will appear with no code changes.
+- Best shape for **pens and nasal sprays: square**, for example 1200 × 1200 pixels (the same as
+  the current pen photos).
+- Best shape for **bundles, protocols and accessories: 3:2**, for example 1200 × 800 pixels. These
+  rows have `widePhotos: true` in the `categories` list, which gives their cards a wide picture
+  frame. Other shapes work but get cropped to fit the frame, so for a picture with text on it,
+  first add plain space around it until it has the right shape.
+- `.webp` or `.jpg` both work; the site resizes images automatically and sends them as AVIF
+  (or WebP to older browsers), so they load quickly on phones.
+- `semaglutide-peptide-pen-bali.webp` is a temporary placeholder, because there is no Semaglutide
+  pen photo yet. Save the real (square) photo with the same file name and it will appear with no
+  code changes.
+- Keep photos light: use `.webp`. The current pen photos are the client's own compressed WebP
+  files (about 45-55 KB each); if you only have a PNG, export it as `.webp` at about 80% quality.
 
 ### Change the WhatsApp number or messages
 
 Open **`lib/whatsapp.ts`**.
 
 - `WHATSAPP_NUMBER`: digits only, starting with the country code (62 for Indonesia), no `+`.
-- `WHATSAPP_DISPLAY_NUMBER`: the same number written nicely, shown in the footer.
+- `WHATSAPP_DISPLAY_NUMBER`: the same number written nicely, shown in the header and footer.
 - `WHATSAPP_MESSAGES`, `getProductMessage` and `getCartMessage` (the Proceed to Checkout
   message): the text that appears in WhatsApp.
 - `WHATSAPP_GREETING`: the first line of **every** message, so the team knows the chat came
@@ -194,7 +224,11 @@ Open the matching file in **`components/`**:
 
 | Section on the page                              | File                  |
 | ------------------------------------------------ | --------------------- |
-| Gold bar and top menu                            | `Header.tsx` (links: `lib/site.ts`) |
+| Gold bar, logo, menu and the header's WhatsApp contact | `Header.tsx` (links: `lib/site.ts`) |
+| Product search in the header                     | `SearchBox.tsx`       |
+| "Browse categories" button (laptops)             | `CategoryMenu.tsx`    |
+| Toolbar at the bottom of phone screens           | `MobileToolbar.tsx`   |
+| Featured product slider at the top               | `ProductSlider.tsx` (products: `featuredProductIds` in `data/products.ts`) |
 | "Peptide Pens Bali" headline and pen photo       | `Hero.tsx`            |
 | "Looking for peptide pens in Bali?" + checklist  | `Intro.tsx`           |
 | Product catalogue                                | `Products.tsx` + `ProductCard.tsx` (products: `data/products.ts`) |
@@ -207,7 +241,7 @@ Open the matching file in **`components/`**:
 | FAQ                                              | `FAQ.tsx` (questions: `data/faq.ts`) |
 | Black "Order Peptide Pens in Bali Today" block   | `WhatsAppCTA.tsx`     |
 | Footer                                           | `Footer.tsx`          |
-| Round WhatsApp button (bottom right)             | `FloatingWhatsApp.tsx` |
+| Round WhatsApp button (bottom right, laptops only) | `FloatingWhatsApp.tsx` |
 
 Lists such as the delivery areas or the checklists are written at the top of their file, so you
 can edit them without touching the layout below.
@@ -227,12 +261,13 @@ Open **`app/globals.css`**. The colours are at the top:
 | `heading`       | `#0b0b0b` | Headings                                                  |
 | `body`          | `#666666` | Paragraph text                                            |
 | `line`          | `#e7e0d0` | Thin borders                                              |
+| `surface`       | `#f9f7f2` | Very light warm grey: header row with the search, footer  |
 | `button`        | `#a0691a` | Main buttons: top of the deep gold gradient (white text)  |
 | `button-dark`   | `#8a5810` | Main buttons: bottom of the gradient and hover colour     |
 
-The main buttons (header "Chat on WhatsApp", "Browse Peptide Pens", the round WhatsApp
-button) use `button` and `button-dark`. Keep them this dark: white text needs a dark enough
-background to stay readable.
+The main buttons ("View product", "Add to cart", "Browse Peptide Pens", the search button, the
+round WhatsApp button) use `button` and `button-dark`. Keep them this dark: white text needs a
+dark enough background to stay readable.
 
 Change a value and it updates everywhere on the site. In the components these appear as class
 names like `bg-primary` or `text-heading`.
@@ -275,7 +310,9 @@ keep the default settings, then point the `peptidepensbali.com` domain at it.
 - **No database or admin panel.** All content is in the files above; edit, save, publish.
 - **Menu links** (`#pens`, `#faq`, ...) jump to the section with the matching `id` in its
   component, for example `<section id="faq">` in `FAQ.tsx`. These are the same links the old
-  site used, so existing bookmarks keep working.
+  site used, so existing bookmarks keep working. Every product card and category row has its own
+  link too (`#product-4`, `#category-bundles`, ...), which the search, the slider and the
+  category menus use.
 - **Search engine data** (the invisible "structured data" that describes the business and the
   FAQ to Google) is built automatically from `lib/whatsapp.ts`, `lib/site.ts` and `data/faq.ts`.
 - **Replaced an image but still see the old one?** The browser keeps a copy. Do a hard refresh

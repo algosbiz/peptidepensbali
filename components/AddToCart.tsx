@@ -16,6 +16,7 @@ type AddToCartProps = {
 
 // Bottom of a product card: pick a quantity, add it to the cart, or skip the
 // cart and ask about this one product straight away on WhatsApp.
+// On phones (narrow 2-column grid) the quantity and the button sit on top of each other.
 export default function AddToCart({ product, option }: AddToCartProps) {
   const [quantity, setQuantity] = useState(1);
   const label = productLabel(product, option);
@@ -26,21 +27,23 @@ export default function AddToCart({ product, option }: AddToCartProps) {
   }
 
   return (
-    <div className="border-t border-line p-4">
-      <div className="flex items-center gap-2">
+    <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <QuantityStepper
           value={quantity}
           onChange={(value) => setQuantity(clampQuantity(value))}
           label={`Quantity of ${label}`}
+          fullWidthOnPhones
         />
         {/* The label starts with the visible words, so voice-control users can say "Add to cart". */}
         <button
           type="button"
           onClick={handleAdd}
           aria-label={`Add to cart: ${quantity} x ${label}`}
-          className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition duration-200 active:scale-[0.98] ${buttonVariants.primary}`}
+          className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap transition duration-200 active:scale-[0.98] sm:flex-1 sm:text-sm ${buttonVariants.primary}`}
         >
-          <ShoppingBag size={18} weight="bold" aria-hidden="true" />
+          {/* The icon is dropped on the narrowest phones, so the words always fit. */}
+          <ShoppingBag size={18} weight="bold" className="max-[359px]:hidden" aria-hidden="true" />
           Add to cart
         </button>
       </div>
@@ -49,11 +52,16 @@ export default function AddToCart({ product, option }: AddToCartProps) {
         href={getWhatsAppUrl(getProductMessage(label))}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Or ask on WhatsApp about ${label}`}
-        className="mt-2 flex min-h-6 items-center justify-center gap-1.5 py-1 text-sm font-medium text-body transition-colors hover:text-primary-dark"
+        aria-label={`Ask on WhatsApp about ${label}`}
+        className="mt-2 flex min-h-6 items-center justify-center gap-1.5 py-1 text-xs font-medium text-body transition-colors hover:text-primary-dark sm:text-sm"
       >
-        <WhatsappLogo size={16} weight="fill" className="text-primary-dark" aria-hidden="true" />
-        Or ask on WhatsApp
+        <WhatsappLogo
+          size={16}
+          weight="fill"
+          className="text-primary-dark max-[359px]:hidden"
+          aria-hidden="true"
+        />
+        Ask on WhatsApp
       </a>
     </div>
   );

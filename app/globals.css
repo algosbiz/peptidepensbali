@@ -17,6 +17,7 @@
   --color-heading: #0b0b0b; /* Headings */
   --color-body: #666666; /* Paragraph text */
   --color-line: #e7e0d0; /* Thin borders */
+  --color-surface: #f9f7f2; /* Very light warm grey (top header row, footer) */
 
   /* Main buttons: a deep gold gradient with white text (dark enough for white
      text to stay readable). bg-linear-to-b from-button to-button-dark */
@@ -66,6 +67,12 @@
     scrollbar-gutter: stable;
   }
 
+  /* Hide the browser's own blue "x" in the search field (it doesn't match the brand).
+     Pressing Escape still clears the search. */
+  input[type="search"]::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
   /* Hide the default triangle on FAQ questions; we show our own + icon instead. */
   summary {
     list-style: none;
@@ -98,14 +105,6 @@
     @apply rounded-full px-3 py-2 text-sm font-medium sm:px-4 sm:py-2.5 sm:text-[15px];
   }
 
-  /* Speed: the browser skips drawing a block until it is close to the screen.
-     The content still exists for search engines, screen readers and Ctrl+F.
-     Used on the catalogue's product grids, which hold many product cards. */
-  .render-when-near {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 1100px;
-  }
-
   .text-link {
     @apply font-medium text-primary-dark underline decoration-primary/50 underline-offset-4 transition-colors hover:decoration-primary-dark;
   }
@@ -114,33 +113,34 @@
 /*
   ANIMATIONS
   Kept deliberately small. Visitors who ask their device for reduced motion get none.
-  .fade-up  - plays once when the page loads (used in the hero)
-  Everything else is always visible; the only other motion is hover effects on cards
-  and buttons. (Content is never hidden until scrolled to, so products always show.)
+  Content is always visible: nothing waits to be scrolled to before it appears,
+  so products always show. The only other motion is hover effects on cards and buttons.
 */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
+  /* Menu, search and category links glide to their section instead of jumping. */
   html {
     scroll-behavior: smooth;
   }
 
-  .fade-up {
-    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Each new slide in the product slider fades in. */
+  .slide-fade {
+    animation: slide-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* The cart panel slides in from the right when it opens. */
   .cart-drawer[open] {
     animation: slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes slide-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
