@@ -3,10 +3,17 @@
 The single-page website for **peptidepensbali.com** (Peptide Pens Bali by Atlas Longevity),
 built with Next.js, TypeScript and Tailwind CSS.
 
-It is a product catalogue with a simple cart, not a full shop: there are no prices, payments,
-accounts or database. Visitors add products to the cart, and **Proceed to Checkout** opens
-WhatsApp with the whole order already written. The Atlas Longevity team confirms price,
-availability and delivery in the chat.
+It is a product catalogue with a simple cart, connected to the Atlas Longevity online shop
+[peptidesbali.online](https://peptidesbali.online/) (WooCommerce). There are no payments,
+accounts or database on this site:
+
+- **Prices, stock and pen types** (disposable pen, reusable pen, cartridge) are read from the
+  online shop automatically and refreshed every 10 minutes. Change a price in the shop and this
+  site follows; nothing has to be typed in here.
+- **Proceed to Checkout** takes visitors to the online shop's checkout with the same products
+  already in its cart. There they pay.
+- Products the online shop doesn't sell are ordered on WhatsApp instead, with the order already
+  written.
 
 The layout is shop-style: a header with product search and a "Browse categories" menu, a slider
 with featured products at the top, the catalogue grouped by category, and on phones a toolbar
@@ -62,7 +69,9 @@ data/
   products.ts      Product categories and the products in each one
   faq.ts           FAQ questions and answers
 lib/
-  whatsapp.ts      WhatsApp number and pre-written messages (including the checkout message)
+  whatsapp.ts      WhatsApp number and pre-written messages (including the order message)
+  shop.ts          The online shop address, price format and checkout link
+  shop-data.ts     Reads prices, stock and pen types from the online shop (and how often)
   cart.ts          How the cart remembers products (you rarely need to touch this)
   site.ts          Website address, catalogue link and menu links
 public/images/     All images (logo, hero, products, about, delivery, share image)
@@ -74,21 +83,33 @@ public/images/     All images (logo, hero, products, about, delivery, share imag
 
 1. Each product card has a **quantity picker** (− 1 +) and an **Add to cart** button.
    Products that come in several doses (e.g. Retatrutide 5 / 10 / 20 / 30 mg) also have a
-   **dose picker**; the photo changes to match the chosen dose. Adding a product opens the cart
-   panel on the right.
+   **dose picker**; the photo changes to match the chosen dose. Pens also have a **pen type**
+   dropdown (Disposable Pen, Reusable Pen, Cartridge). The card shows the online shop's price for
+   the chosen dose and pen type; if the shop has sold out of it, the button says
+   **Out of stock**. Adding a product opens the cart panel on the right.
 2. The **Cart** button in the header (and in the toolbar at the bottom of phone screens) shows
    how many items are in the cart and opens it.
 3. In the cart, visitors can change quantities or remove products. The same product in two
-   doses shows as two separate lines.
-4. **Proceed to Checkout** opens WhatsApp with a message like:
+   doses or two pen types shows as two separate lines. Each line shows its price, and the
+   **Subtotal** adds them up.
+4. **Proceed to Checkout** opens the checkout of the online shop at peptidesbali.online in a new
+   tab, with the same products, doses, pen types and quantities already in the shop's cart, using
+   a link like `https://peptidesbali.online/checkout-link/?products=9753:2,4976:1`. The visitor
+   fills in their details and pays there (any delivery or payment fees are added there). Under
+   the button, **Order on WhatsApp instead** sends the whole order on WhatsApp.
+5. Products the online shop doesn't sell (they have no `shopId`, see below) show
+   **Price on WhatsApp** on their card and are marked **Order on WhatsApp** in the cart, like
+   anything that sold out after it was added. If the cart only has such products, Proceed to
+   Checkout opens WhatsApp. If it has both kinds, an extra **Order the rest on WhatsApp** button
+   sends just those. The WhatsApp message looks like:
 
    ```
    Hi Peptide Pens Bali, I'm contacting you from peptidepensbali.com.
 
    I'd like to order:
 
-   • 2 × Retatrutide Pen (10 mg)
-   • 1 × Summer Cut Bundle
+   • 1 × Semaglutide Pen
+   • 1 × Retatrutide + Cagrilintide Pen (10 mg + 5 mg)
 
    Could you please confirm availability and delivery?
    ```
@@ -96,9 +117,12 @@ public/images/     All images (logo, hero, products, about, delivery, share imag
 Good to know:
 
 - The cart is saved in the visitor's own browser, so it is still there after a refresh. Nothing
-  is sent anywhere until the visitor presses Proceed to Checkout.
-- New products added to `data/products.ts` get an Add to cart button automatically.
-- To change the checkout message, edit `getCartMessage` in **`lib/whatsapp.ts`**.
+  is sent anywhere until the visitor presses one of the checkout buttons.
+- New products added to `data/products.ts` get an Add to cart button automatically. Give them a
+  `shopId` so they can be bought online (see "Connect a product to the online shop" below).
+- Prices and stock are at most 10 minutes old. If something sells out in between, the shop
+  leaves it out of its cart and shows a message at checkout.
+- To change the WhatsApp order message, edit `getCartMessage` in **`lib/whatsapp.ts`**.
 - The cart panel is `components/CartDrawer.tsx`, the header cart button is
   `components/CartButton.tsx`, and the product card buttons are `components/AddToCart.tsx`.
 - Each card also keeps an **Ask on WhatsApp** link for questions about one product.
@@ -160,8 +184,41 @@ To add a whole new category row, add a block to the `categories` list at the top
 (`label` is the short name used on its button).
 
 The product names, doses and photos follow the full catalogue at
-[peptidesbali.online](https://peptidesbali.online/). Prices are not shown on this site; the team
-confirms them on WhatsApp.
+[peptidesbali.online](https://peptidesbali.online/). Prices are never typed into this file: they
+come from the online shop (see below).
+
+### Connect a product to the online shop
+
+A product shows a price, a pen type dropdown and can be checked out online only if it has a
+`shopId`: its id in the shop at peptidesbali.online.
+
+- A product **without doses** (bundles, protocols, accessories, nasal sprays) gets
+  `shopId: 1234,` next to its `image`.
+- A product **with doses** gets a `shopId` on each dose instead, for the **disposable pen** version:
+  `{ label: "10 mg", image: "...", shopId: 9753 }`. The reusable pen and cartridge of the same
+  dose are found from it automatically, with their own prices.
+- A product or dose without a `shopId` shows "Price on WhatsApp" and is ordered on WhatsApp.
+
+To find an id, open `https://peptidesbali.online/wp-json/wc/store/v1/products?search=NAME` in a
+browser (replace NAME, e.g. `tesamorelin`). Each product shows its `"id"`. For a product with doses,
+look under `"variations"`: each one lists its own `"id"` with its `"Pen Type"` and `"MG"`. If the
+shop ever deletes and re-creates a product, its id changes, so update it here too.
+
+### Prices, stock and pen types (automatic)
+
+`lib/shop-data.ts` reads the online shop's public product list and the page is rebuilt in the
+background **every 10 minutes** (`SHOP_REFRESH_SECONDS`). So:
+
+- a new price, a sale price (shown crossed out next to the new one), or a product that sells out
+  or comes back in stock shows on this site within about 10 minutes;
+- a new pen type that the shop adds to a pen shows up in its dropdown by itself;
+- a new **dose** or a new **product** still has to be added to `data/products.ts` (it needs a
+  photo and a `shopId`).
+
+If the shop can't be reached at that moment, the site simply keeps showing the last prices it
+read and tries again on the next visit. A new deployment, however, needs the shop: if
+peptidesbali.online is down while Vercel builds the site, that build fails and the previous
+version stays online. Just redeploy once the shop is back.
 
 ### Choose the products in the slider
 
@@ -207,7 +264,7 @@ Open **`lib/whatsapp.ts`**.
 
 - `WHATSAPP_NUMBER`: digits only, starting with the country code (62 for Indonesia), no `+`.
 - `WHATSAPP_DISPLAY_NUMBER`: the same number written nicely, shown in the header and footer.
-- `WHATSAPP_MESSAGES`, `getProductMessage` and `getCartMessage` (the Proceed to Checkout
+- `WHATSAPP_MESSAGES`, `getProductMessage` and `getCartMessage` (the cart's WhatsApp order
   message): the text that appears in WhatsApp.
 - `WHATSAPP_GREETING`: the first line of **every** message, so the team knows the chat came
   from this website: "Hi Peptide Pens Bali, I'm contacting you from peptidepensbali.com." The

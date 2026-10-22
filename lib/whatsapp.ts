@@ -25,8 +25,9 @@ export function getProductMessage(productName: string) {
   return `I'm interested in the ${productName}. Could you please provide more information?`;
 }
 
-// The message sent by "Proceed to Checkout" in the cart: one line per product.
-// Prices are not on the website, so the team confirms them in the chat.
+// The order message the cart sends on WhatsApp: one line per product. It is used for
+// products that can't be bought online, and when a visitor prefers to order on WhatsApp.
+// The team confirms prices and delivery in the chat.
 export function getCartMessage(lines: { name: string; quantity: number }[]) {
   const list = lines.map((line) => `• ${line.quantity} × ${line.name}`).join("\n");
   return `I'd like to order:\n\n${list}\n\nCould you please confirm availability and delivery?`;

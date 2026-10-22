@@ -2,18 +2,30 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { CaretDown } from "@phosphor-icons/react/ssr";
 import AddToCart from "./AddToCart";
+import { useShopOffers } from "./ShopProvider";
 import { hasWidePhoto, type Product } from "@/data/products";
+import { findOffer, formatPrice, getOffers } from "@/lib/shop";
 
 // One product in the catalogue. The same card is reused for every product;
 // only the data passed in changes. Products with several doses show a dose
 // picker, and the photo changes to match the chosen dose.
+// Pens sold in the online shop also get a pen type picker (disposable pen, reusable pen,
+// cartridge) and show the shop's price for the chosen dose and pen type.
 // The card's id (product-1, product-2, ...) lets the search and the slider jump to it.
 export default function ProductCard({ product }: { product: Product }) {
   const options = product.options ?? [];
   const [selected, setSelected] = useState(options[0]?.label);
+  const [penType, setPenType] = useState<string>();
   const option = options.find((o) => o.label === selected);
   const image = option?.image ?? product.image;
+
+  // The shop's offers for the chosen dose, one per pen type (none if the shop doesn't sell it).
+  const offers = getOffers(useShopOffers(), product.id, selected);
+  // The chosen pen type, or the disposable pen when the chosen one isn't sold in this dose.
+  const offer = findOffer(offers, penType) ?? offers[0];
+  const penTypes = offers.filter((o) => o.penType);
 
   return (
     <article
@@ -74,9 +86,54 @@ export default function ProductCard({ product }: { product: Product }) {
             </div>
           </fieldset>
         )}
+
+        {/* Pen type: a dropdown, because three pen types don't fit side by side on phones.
+            The card shows "Disposable" instead of the shop's "Disposable Pen" so it fits on
+            small phones; the cart and WhatsApp messages use the full name. */}
+        {penTypes.length > 1 && (
+          <div className="relative mt-2 w-full max-w-[13rem]">
+            <select
+              value={offer?.penType}
+              onChange={(event) => setPenType(event.target.value)}
+              aria-label={`Pen type of ${product.name}`}
+              className="h-9 w-full cursor-pointer appearance-none rounded-full border border-line bg-white pr-8 pl-4 text-center text-[11px] font-semibold text-heading transition-colors hover:border-heading focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-dark sm:text-xs"
+            >
+              {penTypes.map((o) => (
+                <option key={o.penType} value={o.penType}>
+                  {o.penTypeName?.replace(/ pen$/i, "")}
+                </option>
+              ))}
+            </select>
+            <CaretDown
+              size={12}
+              weight="bold"
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-body"
+            />
+          </div>
+        )}
+
+        {/* mt-auto keeps the prices of a row of cards on one line, just above the buttons. */}
+        <p className="mt-auto pt-3 font-heading text-[15px] font-semibold text-heading sm:text-base">
+          {offer ? (
+            <>
+              {offer.regularPrice > offer.price && (
+                <s className="mr-1.5 text-xs font-normal text-body">
+                  <span className="sr-only">Regular price </span>
+                  {formatPrice(offer.regularPrice)}
+                </s>
+              )}
+              {formatPrice(offer.price)}
+            </>
+          ) : (
+            <span className="text-[11px] font-medium whitespace-nowrap text-body sm:text-sm">
+              Price on WhatsApp
+            </span>
+          )}
+        </p>
       </div>
 
-      <AddToCart product={product} option={selected} />
+      <AddToCart product={product} option={selected} offer={offer} />
     </article>
   );
 }

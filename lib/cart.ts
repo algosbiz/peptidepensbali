@@ -4,19 +4,26 @@ import { useSyncExternalStore } from "react";
 import { products, type Product, type ProductOption } from "@/data/products";
 
 // THE CART
-// There is no shop backend: the cart only lives in the visitor's browser
-// (localStorage), so it survives a page refresh. "Proceed to Checkout" turns the
-// cart into a WhatsApp message (see components/CartDrawer.tsx).
+// There is no shop backend on this site: the cart only lives in the visitor's browser
+// (localStorage), so it survives a page refresh. "Proceed to Checkout" hands the cart
+// to the online shop at peptidesbali.online (lib/shop.ts), and anything the shop doesn't
+// sell becomes a WhatsApp message (see components/CartDrawer.tsx).
 //
 // Components read the cart with the useCart() hook below, e.g.
 //   const { items, count, add, open } = useCart();
 
-// One line in the cart: a product, its dose (for products with dose options) and how many.
-export type CartLine = { productId: number; option?: string; quantity: number };
-// Points at one line: the same product in two doses is two separate lines.
-export type LineRef = { productId: number; option?: string };
+// One line in the cart: a product, its dose (for products with dose options), its pen type
+// (the online shop's code, e.g. "reusable-pen"; see lib/shop.ts) and how many.
+export type CartLine = { productId: number; option?: string; penType?: string; quantity: number };
+// Points at one line: the same product in two doses or two pen types is two separate lines.
+export type LineRef = { productId: number; option?: string; penType?: string };
 // What components receive for each line.
-export type CartItem = { product: Product; option?: ProductOption; quantity: number };
+export type CartItem = {
+  product: Product;
+  option?: ProductOption;
+  penType?: string;
+  quantity: number;
+};
 
 export const MAX_QUANTITY = 99;
 const STORAGE_KEY = "peptide-pens-bali-cart";
@@ -34,9 +41,11 @@ export function clampQuantity(quantity: number) {
   return Math.min(MAX_QUANTITY, Math.max(1, Math.round(quantity)));
 }
 
-// The name used in the cart and in WhatsApp messages, e.g. "Retatrutide Pen (10 mg)".
-export function productLabel(product: Product, option?: string) {
-  return option ? `${product.name} (${option})` : product.name;
+// The name used in the cart and in WhatsApp messages,
+// e.g. "Retatrutide Pen (10 mg, Reusable Pen)".
+export function productLabel(product: Product, option?: string, penTypeName?: string) {
+  const details = [option, penTypeName].filter(Boolean).join(", ");
+  return details ? `${product.name} (${details})` : product.name;
 }
 
 // Products with doses always get a valid dose (the first one if none or an old one is
@@ -47,7 +56,11 @@ function validOption(product: Product, option?: string) {
 }
 
 function isSameLine(line: LineRef, ref: LineRef) {
-  return line.productId === ref.productId && (line.option ?? "") === (ref.option ?? "");
+  return (
+    line.productId === ref.productId &&
+    (line.option ?? "") === (ref.option ?? "") &&
+    (line.penType ?? "") === (ref.penType ?? "")
+  );
 }
 
 // Read the saved cart, ignoring anything broken or any product that no longer exists,
@@ -63,6 +76,7 @@ function readSavedLines(): CartLine[] {
       const line = {
         productId: product.id,
         option: validOption(product, typeof raw.option === "string" ? raw.option : undefined),
+        penType: typeof raw.penType === "string" && raw.penType ? raw.penType : undefined,
         quantity: clampQuantity(Number(raw.quantity)),
       };
       const existing = lines.find((l) => isSameLine(l, line));
@@ -124,7 +138,11 @@ export const cart = {
   add(ref: LineRef, quantity = 1) {
     const product = products.find((p) => p.id === ref.productId);
     if (!product) return;
-    const target = { productId: product.id, option: validOption(product, ref.option) };
+    const target = {
+      productId: product.id,
+      option: validOption(product, ref.option),
+      penType: ref.penType || undefined,
+    };
     const current = getSnapshot().lines;
     const existing = current.find((line) => isSameLine(line, target));
     const lines = existing
@@ -164,7 +182,7 @@ export function useCart() {
     const product = products.find((p) => p.id === line.productId);
     if (!product) return [];
     const option = product.options?.find((o) => o.label === line.option);
-    return [{ product, option, quantity: line.quantity }];
+    return [{ product, option, penType: line.penType, quantity: line.quantity }];
   });
   const count = items.reduce((total, item) => total + item.quantity, 0);
 

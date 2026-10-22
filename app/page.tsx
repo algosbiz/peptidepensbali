@@ -14,12 +14,18 @@ import WhatsAppCTA from "@/components/WhatsAppCTA";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import CartDrawer from "@/components/CartDrawer";
 import Footer from "@/components/Footer";
+import ShopProvider from "@/components/ShopProvider";
+import { getShopOffers } from "@/lib/shop-data";
 
 // The whole website is this one page. Each line below is one section,
 // in the order visitors see them. Open a component to edit that section.
-export default function Home() {
+// The page is built ahead of time and rebuilt in the background every 10 minutes
+// (SHOP_REFRESH_SECONDS in lib/shop-data.ts), so it shows the online shop's current prices.
+export default async function Home() {
+  const offers = await getShopOffers();
+
   return (
-    <>
+    <ShopProvider offers={offers}>
       <Header />
 
       <main id="main">
@@ -40,6 +46,6 @@ export default function Home() {
       <Footer />
       <FloatingWhatsApp />
       <CartDrawer />
-    </>
+    </ShopProvider>
   );
 }

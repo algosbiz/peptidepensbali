@@ -5,9 +5,23 @@ import Image from "next/image";
 import { ArrowRight, CaretLeft, CaretRight } from "@phosphor-icons/react/ssr";
 import Button from "./Button";
 import Container from "./Container";
+import { useShopOffers } from "./ShopProvider";
 import { categories, featuredProductIds, hasWidePhoto, products, type Product } from "@/data/products";
+import { formatPrice, getOffers, type ShopOffers } from "@/lib/shop";
 
 const featured = featuredProductIds.flatMap((id) => products.filter((p) => p.id === id));
+
+// The lowest online shop price of a product's doses as a disposable pen (the first offer
+// of each dose), for the "From Rp..." line. Undefined when the shop doesn't sell it.
+function lowestPrice(shopOffers: ShopOffers, product: Product) {
+  const doses = product.options?.length ? product.options.map((o) => o.label) : [undefined];
+  const prices = doses.flatMap((dose) =>
+    getOffers(shopOffers, product.id, dose)
+      .slice(0, 1)
+      .map((offer) => offer.price)
+  );
+  return prices.length > 0 ? Math.min(...prices) : undefined;
+}
 
 // "5 mg" or "5-30 mg": the doses a product comes in.
 function doseRange(product: Product) {
@@ -28,6 +42,7 @@ export default function ProductSlider() {
   // The fade animation only plays after the visitor changes the product, not on page load.
   const [moved, setMoved] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const shopOffers = useShopOffers();
   const product = featured[index];
   const count = featured.length;
   const fade = moved ? "slide-fade" : "";
@@ -74,8 +89,7 @@ export default function ProductSlider() {
                   const category = categories.find((c) => c.id === item.category);
                   // The pen details only apply to the pre-filled pens, not to bundles,
                   // protocols, nasal sprays or accessories.
-                  const isPen =
-                    item.format === "Disposable peptide pen" || item.format.endsWith("blend pen");
+                  const isPen = /peptide pen$|blend pen$/i.test(item.format);
                   // Up to three small facts, taken from the product data and the Atlas pen details.
                   const facts = [
                     { value: doseRange(item), label: "Available doses" },
@@ -86,6 +100,7 @@ export default function ProductSlider() {
                         ]
                       : []),
                   ].filter((fact) => fact.value);
+                  const price = lowestPrice(shopOffers, item);
 
                   return (
                     <div
@@ -100,6 +115,12 @@ export default function ProductSlider() {
                         {/* On phones the category is already in the small label above. */}
                         <span className="mt-1 hidden text-primary italic sm:block">{category?.label}</span>
                       </p>
+                      {price !== undefined && (
+                        <p className="mt-3 font-heading text-lg font-semibold text-heading sm:mt-4 sm:text-2xl">
+                          <span className="mr-1.5 text-sm font-medium text-body sm:text-base">From</span>
+                          {formatPrice(price)}
+                        </p>
+                      )}
                       <p className="mt-5 hidden max-w-md leading-relaxed text-body sm:block">
                         {isPen
                           ? `${item.name} in the pre-filled Atlas Longevity pen format, delivered across Bali in discreet packaging.`
