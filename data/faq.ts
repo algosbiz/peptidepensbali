@@ -19,6 +19,26 @@ export const faqs: Faq[] = [
       "Atlas Longevity stocks selected disposable peptide pens, including options for weight management, recovery and wellness.",
   },
   {
+    question: "Where can I buy peptides in Bali?",
+    answer:
+      "Right here. Add peptide pens, nasal sprays or bundles to the cart and check out online, or order through WhatsApp. Atlas Longevity delivers throughout Bali.",
+  },
+  {
+    question: "Are Retatrutide and Tirzepatide pens available in Bali?",
+    answer:
+      "Yes. Retatrutide and Tirzepatide pens are available in several strengths, alongside other weight management pens such as Cagrilintide and AOD-9604.",
+  },
+  {
+    question: "How much do peptide pens cost in Bali?",
+    answer:
+      "Prices are shown in Indonesian rupiah on each product and depend on the dose and pen type (disposable pen, reusable pen or cartridge). For products without a listed price, ask us on WhatsApp.",
+  },
+  {
+    question: "How do I order peptide pens online?",
+    answer:
+      "Choose the dose and pen type, add the product to the cart, then select Proceed to Checkout to pay in the Atlas Longevity online shop. You can also send your order through WhatsApp.",
+  },
+  {
     question: "Do you deliver peptide pens across Bali?",
     answer:
       "Yes. Delivery is available throughout Bali, including Canggu, Seminyak, Ubud, Sanur, Jimbaran, Nusa Dua and Uluwatu.",

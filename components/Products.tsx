@@ -17,7 +17,7 @@ export default function Products() {
         <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <p className="eyebrow">Our Range</p>
-            <h2 className="section-title mt-4">Disposable Peptide Pens Available</h2>
+            <h2 className="section-title mt-4">Disposable Peptide Pens Available in Bali</h2>
             <p className="mt-4 text-lg text-body">
               Atlas Longevity offers a growing range of disposable peptide pens.
             </p>

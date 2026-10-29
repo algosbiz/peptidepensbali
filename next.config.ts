@@ -17,6 +17,20 @@ const nextConfig: NextConfig = {
   //   - ngrok links, e.g. https://something.ngrok-free.app
   // The published website is not affected by this setting.
   allowedDevOrigins: ["192.168.*.*", "*.ngrok-free.app"],
+
+  // SEO: the same website is also reachable at peptidepensbali.vercel.app (and Vercel's
+  // preview links). Google should only list the real domain, peptidepensbali.com, so on
+  // any *.vercel.app address the pages tell search engines "don't index this copy".
+  // Visitors don't notice anything. The real domain is not affected.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: ".*\\.vercel\\.app" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

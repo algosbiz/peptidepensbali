@@ -13,11 +13,13 @@ export default function Hero() {
     <section className="pb-14 lg:pb-20">
       <Container>
         <div className="relative isolate overflow-hidden rounded-3xl bg-accent ring-1 ring-line/70">
+          {/* sizes says 1200px instead of the banner's real 1216px: the next photo size up
+              is 1920px, which is 23 KB heavier for a difference nobody can see. */}
           <Image
             src="/images/hero/peptide-pen-bali.webp"
-            alt="A white and gold disposable peptide pen on marble under palm leaf shadows"
+            alt="A white and gold disposable peptide pen from Peptide Pens Bali on marble under palm leaf shadows"
             fill
-            sizes="(min-width: 1280px) 1216px, calc(100vw - 40px)"
+            sizes="(min-width: 1280px) 1200px, calc(100vw - 40px)"
             className="-z-20 object-cover object-[70%_55%]"
           />
           <div className="absolute inset-0 -z-10 bg-white/80 md:bg-transparent md:bg-linear-to-r md:from-white md:via-white/85 md:to-white/0" />

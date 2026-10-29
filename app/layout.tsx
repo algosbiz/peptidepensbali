@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
-import { SITE_URL } from "@/lib/site";
+import { CATALOGUE_URL, SITE_URL } from "@/lib/site";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 import "./globals.css";
 
@@ -21,9 +21,12 @@ const inter = Inter({
 });
 
 // SEO: the title and description shown in Google and when the site is shared.
-const title = "Peptide Pens Bali | Disposable Peptide Pens Delivered Across Bali";
+// Google cuts titles after about 60 characters and descriptions after about 155,
+// so keep them within those lengths. "Peptides Bali" is the most searched phrase
+// for this kind of shop in Indonesia (Ahrefs, October 2026), so both use it.
+const title = "Peptide Pens Bali | Buy Peptides in Bali with Fast Delivery";
 const description =
-  "Buy disposable peptide pens in Bali with fast, discreet delivery. Weight loss pens, recovery peptides and nasal spray peptides available throughout Bali.";
+  "Buy peptides in Bali: Retatrutide, Tirzepatide, BPC-157, NAD+ and GHK-Cu peptide pens plus nasal sprays. Rupiah prices, fast discreet delivery across Bali.";
 const shareImage = {
   url: "/images/og/peptide-pens-bali-og.jpg",
   width: 1200,
@@ -58,18 +61,22 @@ export const metadata: Metadata = {
   },
 };
 
-// Structured data describing the business and website for search engines.
-// Kept to what the site really shows: the brand, its website and a WhatsApp contact.
+// Structured data describing the business, website and page for search engines.
+// Kept to what the site really shows: the brand, its online shop, its website and a WhatsApp contact.
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Organization",
+      "@type": "OnlineStore",
       "@id": `${SITE_URL}/#organization`,
       name: "Atlas Longevity",
       alternateName: "Peptide Pens Bali",
       url: SITE_URL,
       logo: `${SITE_URL}/images/logo/peptide-pens-bali-logo.png`,
+      image: `${SITE_URL}${shareImage.url}`,
+      sameAs: [CATALOGUE_URL],
+      areaServed: { "@type": "Place", name: "Bali, Indonesia" },
+      currenciesAccepted: "IDR",
       contactPoint: {
         "@type": "ContactPoint",
         telephone: `+${WHATSAPP_NUMBER}`,
@@ -82,7 +89,19 @@ const organizationJsonLd = {
       "@id": `${SITE_URL}/#website`,
       name: "Peptide Pens Bali",
       url: SITE_URL,
+      inLanguage: "en",
       publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/#webpage`,
+      url: SITE_URL,
+      name: title,
+      description,
+      inLanguage: "en",
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      about: { "@id": `${SITE_URL}/#organization` },
+      primaryImageOfPage: { "@type": "ImageObject", url: `${SITE_URL}${shareImage.url}` },
     },
   ],
 };

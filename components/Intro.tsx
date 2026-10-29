@@ -24,7 +24,7 @@ export default function Intro() {
             className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-button via-primary to-primary-light"
           />
           <h2 className="max-w-2xl font-heading text-3xl leading-tight font-semibold tracking-[-0.02em] text-heading sm:text-4xl">
-            Looking for peptide pens in Bali?
+            Looking for peptides and peptide pens in Bali?
           </h2>
 
           <div className="mt-6 grid gap-6 text-[15px] leading-relaxed text-body md:grid-cols-2 md:gap-10">
