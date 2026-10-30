@@ -29,6 +29,15 @@ const nextConfig: NextConfig = {
         has: [{ type: "host", value: ".*\\.vercel\\.app" }],
         headers: [{ key: "X-Robots-Tag", value: "noindex" }],
       },
+      // Speed: Cloudflare (in front of Vercel on peptidepensbali.com) may keep a copy of the page
+      // for 5 minutes. After that it keeps showing its copy for up to an hour while it fetches
+      // the new one in the background, so nobody waits. Only Cloudflare reads this header;
+      // browsers never see it. Each new deployment empties Cloudflare's copy straight away.
+      // See "Cloudflare cache" in README.md.
+      {
+        source: "/",
+        headers: [{ key: "Cloudflare-CDN-Cache-Control", value: "max-age=300, stale-while-revalidate=3600" }],
+      },
     ];
   },
 };

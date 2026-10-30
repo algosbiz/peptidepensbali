@@ -1,0 +1,58 @@
+# Keeps Cloudflare's copy of the website up to date. See "Cloudflare cache" in README.md.
+name: Cloudflare cache
+
+on:
+  # Vercel tells GitHub every time a deployment is finished.
+  deployment_status:
+  # Someone changed the cache rules.
+  push:
+    branches: [main]
+    paths: [cloudflare/cache-rules.mjs]
+  # The "Run workflow" button on the repository's Actions tab.
+  workflow_dispatch:
+    inputs:
+      task:
+        description: What should happen?
+        type: choice
+        options: [purge, rules]
+        default: purge
+
+permissions:
+  contents: read
+
+# Two runs never talk to Cloudflare at the same time.
+concurrency:
+  group: cloudflare-cache
+
+jobs:
+  purge:
+    name: Empty Cloudflare's cache
+    # Only for the real website, not for Vercel's preview links of other branches.
+    if: >-
+      (github.event_name == 'deployment_status'
+        && github.event.deployment_status.state == 'success'
+        && github.event.deployment.environment == 'Production')
+      || (github.event_name == 'workflow_dispatch' && inputs.task == 'purge')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Give Vercel a moment to switch the domain to the new version
+        if: github.event_name == 'deployment_status'
+        run: sleep 20
+      - run: node cloudflare/cloudflare.mjs purge
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
+  rules:
+    name: Send the cache rules to Cloudflare
+    if: >-
+      github.event_name == 'push'
+      || (github.event_name == 'workflow_dispatch' && inputs.task == 'rules')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: node cloudflare/cloudflare.mjs rules
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}

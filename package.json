@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cloudflare:purge": "node --env-file-if-exists=.env.local cloudflare/cloudflare.mjs purge",
+    "cloudflare:rules": "node --env-file-if-exists=.env.local cloudflare/cloudflare.mjs rules",
+    "cloudflare:check": "node --env-file-if-exists=.env.local cloudflare/cloudflare.mjs check"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

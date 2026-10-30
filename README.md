@@ -362,6 +362,60 @@ keep the default settings, then point the `peptidepensbali.com` domain at it.
 
 ---
 
+## Cloudflare cache
+
+`peptidepensbali.com` runs on Vercel with Cloudflare in front of it (the orange cloud in
+Cloudflare's DNS settings). Cloudflare keeps copies of the page and the photos so visitors get
+them faster. Two things keep those copies correct:
+
+- **Cache rules** in [`cloudflare/cache-rules.mjs`](cloudflare/cache-rules.mjs) say what Cloudflare
+  may keep and for how long:
+
+  | What | Cloudflare keeps it | Browsers keep it |
+  | --- | --- | --- |
+  | The page (HTML) | 5 minutes, then refreshes it in the background | no, they always ask for the newest |
+  | Resized photos (`/_next/image`), one copy per format (AVIF/WebP) | 30 days | 4 hours (Cloudflare's Browser Cache TTL setting) |
+  | Photos in `/public/images`, icons, `robots.txt`, `sitemap.xml` | 30 days | 4 hours |
+  | Code, styles and fonts (`/_next/static`) | 1 year (new file names on every update) | 1 year |
+
+  The page's 5 minutes is set in `next.config.ts` (the `Cloudflare-CDN-Cache-Control` header).
+  It keeps prices from the shop fresh between deployments.
+- **Automatic purge:** every time a new version goes live on Vercel, GitHub empties Cloudflare's
+  cache for `peptidepensbali.com` and `www.peptidepensbali.com`
+  ([`.github/workflows/cloudflare-cache.yml`](.github/workflows/cloudflare-cache.yml)).
+  You can follow it on the repository's **Actions** tab ("Cloudflare cache").
+
+### One-time setup
+
+1. In the Cloudflare account that manages `peptidepensbali.com`, go to **My Profile → API Tokens →
+   Create Token → Create Custom Token**. Give it these permissions, for the zone
+   `peptidepensbali.com` only:
+   - Zone → **Cache Purge** → Purge
+   - Zone → **Cache Rules** → Edit
+2. Copy the **Zone ID** from the domain's **Overview** page in Cloudflare (right-hand column).
+3. On GitHub, open the repository → **Settings → Secrets and variables → Actions → New repository
+   secret** and add two secrets: `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ZONE_ID`.
+4. Open the **Actions** tab → **Cloudflare cache** → **Run workflow**, choose `rules` and run it.
+   This sends the cache rules to Cloudflare. From then on, every deployment purges automatically.
+
+Until the secrets exist, the workflow only shows a warning and doesn't contact Cloudflare.
+
+### Good to know
+
+- **Change a rule** in `cloudflare/cache-rules.mjs`, not in the Cloudflare dashboard: pushing the
+  file to `main` sends the rules to Cloudflare again and would undo dashboard edits to them.
+  Rules you add yourself in the dashboard are kept.
+- **Purge by hand** (for example after an *Instant Rollback* in Vercel, which doesn't tell GitHub):
+  Actions tab → **Cloudflare cache** → **Run workflow** → `purge`.
+- **Check that it works:** `npm run cloudflare:check` asks for a few addresses twice and shows
+  Cloudflare's answer (`HIT` = served from Cloudflare's copy). To run `cloudflare:purge` or
+  `cloudflare:rules` on your computer, put `CLOUDFLARE_API_TOKEN=...` and `CLOUDFLARE_ZONE_ID=...`
+  in a file called `.env.local` first (it is never uploaded).
+- Purging empties **Cloudflare's** copies only. A browser that already has a photo keeps it for up
+  to 4 hours, so give a replaced photo a new file name.
+
+---
+
 ## Good to know
 
 - **No database or admin panel.** All content is in the files above; edit, save, publish.
